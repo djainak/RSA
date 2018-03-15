@@ -95,6 +95,27 @@ namespace RSA
         }
 
         /// <summary>
+        /// Проверка на эквивалентность
+        /// </summary>
+        /// <param name="obj">С чем сравниваем</param>
+        /// <returns>да или нет</returns>
+        public override bool Equals(object obj)
+        {
+            BigInteger target = (BigInteger)obj;
+            if (target.arr.Count == arr.Count)
+            {
+                for (int i = 0; i < arr.Count; i++)
+                {
+                    if (arr[i] != target.arr[i])
+                        return false;
+                }
+            }
+            else
+                return false;
+            return sign == target.sign;
+        }
+
+        /// <summary>
         /// Сравнение двух больших чисел
         /// </summary>
         /// <param name="other">Сравниваемое число</param>
@@ -324,10 +345,10 @@ namespace RSA
         /// </summary>
         /// <param name="arr">Список для удаления</param>
         /// <returns>Нормализованный список</returns>
-        private List<int> Normalize(List<int> arr)
+        private static List<int> Normalize(List<int> arr)
         {
             //Удаляем лидирующие нули
-            while (arr.Count > 0 && arr[arr.Count - 1] == 0)
+            while (arr.Count > 1 && arr[arr.Count - 1] == 0)
                 arr.RemoveAt(arr.Count - 1);
             return arr;
         }
@@ -564,7 +585,7 @@ namespace RSA
                 }
                 j--;
             }
-            q.arr = q.Normalize(q.arr);
+            Normalize(q.arr); 
             //8.Денормализация
             /*q[m]..q[0] — искомое частное, а для получения искомого остатка достаточно u[n-1]..u[0]/d*/
             int unusedR = 0;
@@ -681,6 +702,142 @@ namespace RSA
                 }
             }
             return b;
+        }
+
+        /// <summary>
+        /// Поиск  обратного элемента в кольце по модулю N
+        /// Расширенный алгоритм Евклида
+        /// </summary>
+        /// <param name="n">По модулю какого числа</param>
+        /// <returns>Обратный элемент</returns>
+        public BigInteger Inverse(BigInteger n)
+        {
+            /*Для того, чтобы найти обратный элемент в кольце по модулю n достаточно решить уравнение ax+ny = d, 
+             * при этом НОД(a, n) = 1, иначе решения не существует. Искомый x и будет обратным элементом.
+             * Основная идея рекурсивного алгоритма Евклида в том, что НОД(a,b) = НОД(b % a, a), очевидно, 
+             * что данный переход должен происходить на каждом шаге нашего цикла. Кроме того нам нужно как — то
+             * подсчитываться НОД и x. Очевидно, что d на следующем шаге равняется x на предыдущем шаге минус q
+             * умножить на d на этом шаге, где. Тогда x это d на предыдущем шаге.
+             * 1. Использовать расширенный алгоритм Евклида для нахождения x и y, таких что ax + ny = d, где d=НОД(a,n).
+             * 2. Если d > 1, то обратного элемента не существует. Иначе возвращаем x.*/
+            BigInteger a = new BigInteger(this.ToString()); //Копия числа, к которому ищем обратное
+            BigInteger b = n, //Временно храним модуль 
+                x = new BigInteger("0"), //Обратный элемент
+                d = new BigInteger("1"); //Искомый НОД
+
+            while (a.CompareTo(new BigInteger("0")) == 1)//a>0
+            {
+                BigInteger q = b.Div(a); // q это b / a
+                BigInteger y = a;
+
+                a = b.Mod(a); //НОД(a,b) = НОД(b % a, a)
+                b = y; //Присваиваем b = a
+
+                y = d;
+
+                //d на следующем шаге равняется x на предыдущем шаге минус q(b.Div(a)) * d(на этом шаге)
+                d = x.Substract(q.Multiply(d));  
+                x = y;
+            }
+
+            x = x.Mod(n);
+
+            //Eсли обратный получился меньше нуля, то давайте сделаем его положительным.
+            if (x.CompareTo(new BigInteger("0")) == -1)//x<0 
+                x = (x.Add(n)).Mod(n);
+
+            return x;
+        }
+
+        /// <summary>
+        /// Теорема Ферма утверждает, что если число простое, то любое число a удовлетворяет равенству: 
+        /// a^(n-1)=1(mod n). Если а = 2, то это дает неплохие результаты. Данная функция является
+        /// улучшеним проверки 2^(n-1)=1(mod n)
+        /// </summary>
+        /// <param name="a">Любое а</param>
+        /// <param name="n">Проверяемое на простоту число</param>
+        /// <returns>возвращает true в случае, если число составное</returns>
+        private static bool Witness(BigInteger a, BigInteger n)
+        {
+            /*мы раскладываем число n-1=2^t*u, где u — нечетное. После этого мы проверяем корни на нетривиальность. 
+             * В результате после t итераций мы либо вычисляем a^(n-1), либо находим нетривиальные корни*/
+            BigInteger u = n.Substract(new BigInteger("1"));
+            int t = 0;
+
+            while (u.Mod(new BigInteger("2")).Equals(new BigInteger("0")))
+            {
+                t++;
+                u = u.Div(new BigInteger("2"));
+            }
+            BigInteger[] x = new BigInteger[t + 1];
+            x[0] = a.Pow(u, n);
+            for (int i = 1; i <= t; i++)
+            {
+                x[i] = x[i - 1].Pow(new BigInteger("2"), n);
+                if (x[i].Equals(new BigInteger("1")) && !x[i - 1].Equals(new BigInteger("1")) 
+                    && !x[i - 1].Equals(n.Substract(new BigInteger("1"))))
+                    return true;
+            }
+            if (!x[t].Equals(new BigInteger("1"))) { return true; }
+            return false;
+        }
+
+        /// <summary>
+        /// Генерации случайного числа. Так как разрядом нашего числа является int, то мы можем генерировать 
+        /// каждый разряд в отдельности. При этом начинать мы можем со старших, тогда создадим некоторый флаг, 
+        /// который будет показывает в каком диапазоне мы можем генерировать число. Если этот флаг true, то мы
+        /// можем взять только число из промежутка с 0 до значение в текущем разряде числа, иначе мы можем взять
+        /// любое число до базы.
+        /// </summary>
+        /// <param name="n">Максимальное число, до которого генерируем</param>
+        /// <returns>Сгенерированное число</returns>
+        public static BigInteger Generate(BigInteger n)
+        {
+            BigInteger maxBigInteger = n.Substract(new BigInteger("1"));
+            BigInteger bigBase = new BigInteger(mybase.ToString());
+            Random r = new Random();
+            List<int> arr = new List<int>(maxBigInteger.arr.Count);
+
+            bool flag = true;
+            for (int i = maxBigInteger.arr.Count - 1; i >= 0; i--)
+            {
+                int temp;
+                if (flag)
+                {
+                    temp = r.Next(maxBigInteger.arr[i] + 1);
+                    flag = maxBigInteger.arr[i] == temp;
+                }
+                else
+                {
+                    temp = r.Next(mybase);
+                }
+                arr.Add(temp);
+            }
+            arr.Reverse();
+            return new BigInteger(arr, true);
+        }
+
+        /// <summary>
+        /// Алгоритм Миллера - Рабина состоит из s проверок числа на простоту, где каждый раз мы генерируем новое
+        /// случайное большое число a, которое будет называться свидетелем. После этого мы запускаем процедуру Witness,
+        /// которая отвечает нам на вопрос, является ли число составным, если да, то число составное, если нет, то
+        /// переходим к следующему свидетелю и так s раз
+        /// </summary>
+        /// <param name="n">Максимальное число</param>
+        /// <param name="s">Число проверок на простоту</param>
+        /// <returns></returns>
+        public static bool IsPrimeMillerRabin(BigInteger n, int s)
+        {
+            BigInteger pred = new BigInteger("0");
+            for (int j = 0; j < s; j++)
+            {
+                BigInteger a = Generate(n);
+                while (a.Equals(pred))
+                    a = Generate(n);
+                if (Witness(a, n))
+                    return false;
+            }
+            return true;
         }
     }
 }
