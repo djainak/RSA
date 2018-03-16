@@ -839,6 +839,70 @@ namespace RSA
             }
             return true;
         }
+
+        /// <summary>
+        /// Генератор случайных чисел, берущий на вход полуинтервал [A,B), где A и B большие числа
+        /// </summary>
+        /// <param name="a">Большое число</param>
+        /// <param name="b">Большое число</param>
+        /// <returns>Сгенерированное большое число</returns>
+        public static BigInteger Generate(BigInteger a, BigInteger b)
+        {
+            return Generate(b.Substract(a)).Add(a);
+        }
+
+        /// <summary>
+        /// Функция нахождения простых чисел на отрезке
+        /// </summary>
+        /// <param name="a">Начало интервала</param>
+        /// <param name="b">Конец интервала</param>
+        /// <returns>Простое число</returns>
+        public static BigInteger GeneratePrime(BigInteger a, BigInteger b)
+        {
+            int i = 0;
+            BigInteger last = new BigInteger("1");
+            while (i < 10000)
+            {
+                BigInteger temp = BigInteger.Generate(a, b);
+                if (BigInteger.IsPrimeMillerRabin(temp, 100))
+                    return temp;
+                else
+                {
+                    last = temp;
+                    i++;
+                }
+            }
+            return null; //не нашли 
+        }
+
+        /// <summary>
+        /// Возведение в квадрат по формуле Герона
+        /// </summary>
+        /// <param name="a">Какое число возводим</param>
+        /// <returns>Результат</returns>
+        public static BigInteger SqrtByGeron(BigInteger a)
+        {
+            return GeronFunction(a, new BigInteger("1"), 1, 1000);
+        }
+
+        /// <summary>
+        /// Возведение в квадрат по формуле Герона
+        /// </summary>
+        /// <param name="a">Число, из которого извлекаем корень</param>
+        /// <param name="b">Будущий ответ</param>
+        /// <param name="step">На какой итерации мы сейчас</param>
+        /// <param name="n">Число вычислений (итераций)</param>
+        /// <returns>Квадратный корень</returns>
+        private static BigInteger GeronFunction(BigInteger a, BigInteger b, int step, int n)
+        {
+            int r = 0;
+            BigInteger ans = (b.Add(a.Div(b))).Divide(2, out r);
+            if (step >= n || ans.Substract(b).CompareTo(new BigInteger("1")) == 0)
+            {
+                return ans;
+            }
+            return GeronFunction(a, ans, step + 1, n);
+        }
     }
 }
 
