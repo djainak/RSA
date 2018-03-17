@@ -38,6 +38,9 @@ namespace RSA
 
             /*Считаем приватный ключ. Для этого берется обратное к публичному ключу по модулю n.*/
             privateKey = publicKey.Inverse(fi);
+
+            /* Пара (publicKey,N) - открытый ключ. 
+             * Пара (privateKey,N) - закрытый ключ.*/
         }
 
         /// <summary>

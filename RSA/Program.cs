@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RSA
 {
@@ -12,6 +13,7 @@ namespace RSA
         {
             try
             {
+                Application.Run(new UserApp()); /*
                 BigInteger p = new BigInteger(Console.ReadLine());//считываем p
                 BigInteger q = new BigInteger(Console.ReadLine());//считываем q
                 if (p.Equals(new BigInteger("1")) || q.Equals(new BigInteger("1")) || !BigInteger.IsPrimeMillerRabin(p, 100) //проверяем
@@ -21,9 +23,19 @@ namespace RSA
                 }
                 else
                 {
-                    RSA rsa = new RSA(p, q);//создаем класс RSA
-                    string s = Console.ReadLine();//считываем сообщение, которое необходимо зашифровать
-                    RSA.GenerateInform(); //генерируем алфавит
+                    //Cоздаем класс RSA
+                    RSA rsa = new RSA(p, q);
+
+                    //Cчитываем сообщение, которое необходимо зашифровать
+                    string s = Console.ReadLine();
+
+                    //Генерируем алфавит
+                    RSA.GenerateInform();
+
+                    //Преобразовываем строку в длинное число для шифрования
+                    BigInteger num = RSA.GetBigInt(s);
+
+                    /*
                     int i = 0;//с какой позиции начинается очередной блок
                     int len = 0;//размер блока
                     while (i < s.Length)//пока не весь текст разбит на блоки
@@ -38,14 +50,17 @@ namespace RSA
                         m = temp;//присваиваем хорошее длинное число
 
 
-                        i = i + len;// переходим к следующей позиции
-                        BigInteger crypt = rsa.Crypt(m);//шифруем
+                        i = i + len;// переходим к следующей позиции */
+                        /*
+                        BigInteger crypt = rsa.Crypt(num);//шифруем
+
                                                         //вот здесь данные можно передавать по сети и прочее
+
                         BigInteger decrypt = rsa.Decrypt(crypt);//дешифруем
+
                         Console.WriteLine(RSA.GetText(decrypt));//выводим результат на экран
                     }
-                    Console.ReadKey();
-                }
+                    Console.ReadKey();*/
             }
             catch (Exception s)
             {
