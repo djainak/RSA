@@ -27,7 +27,7 @@ namespace RSA
         /// <param name="a">true +, false -</param>
         public void ChangeSign(bool a)
         {
-            sign = a;
+            this.sign = a;
         }
 
         /// <summary>
@@ -327,17 +327,30 @@ namespace RSA
             {
                 return this.AbsSubstract(value);
             }
-            if (!this.sign && value.sign)
+            else if (!this.sign && value.sign)
             {
-                BigInteger ans = this.AbsAdd(value);
+                BigInteger ans = this;
+                ans.ChangeSign(true);
+                ans = ans.AbsAdd(value);
                 ans.ChangeSign(false);
                 return ans;
             }
-            if (this.sign && !value.sign)
+            else if (this.sign && !value.sign)
             {
-                return this.AbsAdd(value);
+                BigInteger ans = value;
+                ans.ChangeSign(true);
+                ans = this.AbsAdd(ans);
+                return ans;
             }
-            return value.AbsSubstract(this);
+            else
+            {
+                BigInteger ans1 = value;
+                BigInteger ans2 = this;
+                ans1.ChangeSign(true);
+                ans2.ChangeSign(true);
+                ans1 = ans1.Substract(ans2);
+                return ans1;
+            }
         }
 
         /// <summary>
@@ -432,11 +445,36 @@ namespace RSA
         /// <returns>Произведение</returns>
         public BigInteger Multiply(BigInteger value)
         {
-            BigInteger ans = this.AbsMultiply(value);
-            if ((this.sign && value.sign) || (!this.sign && !value.sign))
+            BigInteger a = this;
+            BigInteger b = value;
+            BigInteger ans;
+            if (a.sign && b.sign)
+                return a.AbsMultiply(b);
+            else if (!a.sign && !b.sign)
+            {
+                a.ChangeSign(true);
+                b.ChangeSign(true);
+                ans = a.AbsMultiply(b);
+                a.ChangeSign(false);
+                b.ChangeSign(false);
                 return ans;
-            ans.ChangeSign(false);
-            return ans;
+            }
+            else if (!a.sign)
+            {
+                a.ChangeSign(true);
+                b = a.AbsMultiply(b);
+                b.sign = false;
+                a.ChangeSign(false);
+                return b;
+            }
+            else
+            {
+                b.sign = true;
+                a = a.AbsMultiply(b);
+                a.sign = false;
+                b.sign = false;
+                return a;
+            }
         }
         /// <summary>
         /// Деление большого числа на короткое
@@ -657,6 +695,7 @@ namespace RSA
                     int tempr = 0;
                     return this.Divide(v.arr[0], out tempr);
                 }
+
                 Divide(out q, out r, this, v);
             }
             else
@@ -704,6 +743,7 @@ namespace RSA
             return b;
         }
 
+        
         /// <summary>
         /// Поиск  обратного элемента в кольце по модулю N
         /// Расширенный алгоритм Евклида
@@ -734,9 +774,9 @@ namespace RSA
                 b = y; //Присваиваем b = a
 
                 y = d;
-
+               
                 //d на следующем шаге равняется x на предыдущем шаге минус q(b.Div(a)) * d(на этом шаге)
-                d = x.Substract(q.Multiply(d));  
+                d = x.Substract(q.Multiply(d));
                 x = y;
             }
 
@@ -745,7 +785,6 @@ namespace RSA
             //Eсли обратный получился меньше нуля, то давайте сделаем его положительным.
             if (x.CompareTo(new BigInteger("0")) == -1)//x<0 
                 x = (x.Add(n)).Mod(n);
-
             return x;
         }
 

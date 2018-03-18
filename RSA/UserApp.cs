@@ -125,6 +125,7 @@ namespace RSA
 
                 //Cоздаем класс RSA
                 RSA rsa = new RSA(p, q);
+                labelInform.Text = rsa.privateKey.ToString() + "\n";
 
                 //Cчитываем сообщение, которое необходимо зашифровать
                 string s = textBox.Text;
@@ -136,7 +137,7 @@ namespace RSA
                 BigInteger num = RSA.GetBigInt(s);
 
                 //Выводим получившееся длинное число в строку информации
-                labelInform.Text = "Сообщение преобразовано в длинное число:\n" + num.ToString() + "\n";
+                labelInform.Text = labelInform.Text + "Сообщение преобразовано в длинное число:\n" + num.ToString() + "\n";
 
                 try
                 {
@@ -173,7 +174,9 @@ namespace RSA
                     List<BigInteger> shifr = new List<BigInteger>();
                     foreach (BigInteger a in cr)
                     {
-                        shifr.Add(rsa.Crypt(a));
+                        BigInteger mm = rsa.Crypt(a);
+                        shifr.Add(mm);
+                        labelInform.Text = labelInform.Text + mm.ToString() + " Я зашифровал число\n";
                     }
                     
                     labelInform.Text = labelInform.Text + " Я вышел из шифровки\n";
@@ -185,10 +188,11 @@ namespace RSA
                     
                     labelInform.Text = labelInform.Text + " Я вышел из дешифровки\n";
 
-                    string tmp = "1";
+                    string tmp = "";
                     foreach (BigInteger a in shifr2)
                     {
-                        labelInform.Text = labelInform.Text + a.ToString() +  " Я взял число\n";
+                        string t = a.ToString();
+                        labelInform.Text = labelInform.Text + t +  " Я взял число\n";
                         tmp = tmp + RSA.GetText(a);
                         labelInform.Text = labelInform.Text + tmp + " У меня получилось\n";
                     }
@@ -201,32 +205,6 @@ namespace RSA
                 {
                     labelInform.Text = labelInform.Text + ex.Message;
                 }
-                
-                
-
-                
-                
-                
-                
-
-                /*
-                BigInteger crypt;
-                
-                //Шифруем и получаем криптограмму
-                crypt = rsa.Crypt(num);
-
-                //Выводим получившуюся криптограмму в строку информации
-                labelInform.Text = labelInform.Text + "Криптограмма:\n" + crypt.ToString() + "\n";
-
-                //Дешифруем
-                BigInteger decrypt = rsa.Decrypt(crypt);
-
-                //Выводим получившуюсяя дешифрованную криптограмму в строку информации
-                labelInform.Text = labelInform.Text + "Дешифрованная криптограмма:\n" + decrypt.ToString() + "\n";
-                
-                //Расшифрованное сообщение
-                //labelInform.Text = labelInform.Text + "Зашифрованное сообщение:\n" + RSA.GetText(decrypt) + "\n";
-                */
             }
         }
 

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace RSA
 {
     class RSA
     {
         public BigInteger publicKey; //публичный ключ
-        private BigInteger privateKey; //приватный ключ
+        public BigInteger privateKey; //приватный ключ
         public BigInteger n;
+        public BigInteger f;
 
         //Mассив пар, который будет содержать все символы, которые мы собираемся шифровать
         static List<Pair> sym = new List<Pair>();
@@ -28,13 +30,11 @@ namespace RSA
             /*Считаем функцию Эйлера φ(n)= (p-1)(q-1). Функция Эйлера φ(n), где n — натуральное число, 
              * равна количеству натуральных чисел, меньших и взаимно простых с ним.*/
             BigInteger fi = (p.Substract(new BigInteger("1"))).Multiply(q.Substract(new BigInteger("1")));
+            f = fi;
 
             /*Генерируем публичный ключ. Для этого нужно взять число взаимнопростое с n, которое будет меньше,
              * чем значение функции Эйлера(фи)*/
-            publicKey = BigInteger.Generate(fi);
-
-            while (!BigInteger.IsPrimeMillerRabin(publicKey, 100))
-                publicKey = BigInteger.Generate(fi);
+            publicKey = new BigInteger("65537");
 
             /*Считаем приватный ключ. Для этого берется обратное к публичному ключу по модулю n.*/
             privateKey = publicKey.Inverse(fi);
@@ -69,11 +69,11 @@ namespace RSA
         /// </summary>
         public static void GenerateInform()
         {
-            int i = 0;
+            int i = 10;
             for (char c = 'а'; c <= 'я'; c++)
             {
                 Pair p = new Pair()
-                { Digit = (i < 10) ? ('0' + i.ToString()).ToString() : i.ToString(), Letter = c };
+                { Digit = i.ToString(), Letter = c };
 
                 sym.Add(p);
                 i++;
@@ -82,7 +82,7 @@ namespace RSA
             for (char c = 'А'; c <= 'Я'; c++)
             {
                 Pair p = new Pair()
-                { Digit = (i < 10) ? ('0' + i.ToString()).ToString() : i.ToString(), Letter = c };
+                { Digit = i.ToString(), Letter = c };
 
                 sym.Add(p);
                 i++;
@@ -127,6 +127,10 @@ namespace RSA
         {
             string s = b.ToString();
             StringBuilder ans = new StringBuilder();
+            if (s.Length == 1)
+            {
+                s = "0" + s;
+            }
             for (int i = 0; i < s.Length; i = i + 2)
             {
                 string temp = s.Substring(i, 2);
