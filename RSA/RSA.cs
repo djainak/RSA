@@ -78,6 +78,21 @@ namespace RSA
                 sym.Add(p);
                 i++;
             }
+
+            for (char c = 'А'; c <= 'Я'; c++)
+            {
+                Pair p = new Pair()
+                { Digit = (i < 10) ? ('0' + i.ToString()).ToString() : i.ToString(), Letter = c };
+
+                sym.Add(p);
+                i++;
+            }
+
+            Pair pp = new Pair()
+            { Digit = i.ToString(), Letter = ' '};
+
+            sym.Add(pp);
+            i++;
         }
 
         /// <summary>
@@ -112,7 +127,7 @@ namespace RSA
         {
             string s = b.ToString();
             StringBuilder ans = new StringBuilder();
-            for (int i = 1; i < s.Length; i = i + 2)
+            for (int i = 0; i < s.Length; i = i + 2)
             {
                 string temp = s.Substring(i, 2);
                 for (int j = 0; j < sym.Count; j++)

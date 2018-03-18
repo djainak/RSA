@@ -51,16 +51,17 @@ namespace RSA
 
 
                         i = i + len;// переходим к следующей позиции */
-                        /*
-                        BigInteger crypt = rsa.Crypt(num);//шифруем
+                                                /*
+                                                BigInteger crypt = rsa.Crypt(num);//шифруем
 
-                                                        //вот здесь данные можно передавать по сети и прочее
+                                                                                //вот здесь данные можно передавать по сети и прочее
 
-                        BigInteger decrypt = rsa.Decrypt(crypt);//дешифруем
+                                                BigInteger decrypt = rsa.Decrypt(crypt);//дешифруем
 
-                        Console.WriteLine(RSA.GetText(decrypt));//выводим результат на экран
-                    }
-                    Console.ReadKey();*/
+                                                Console.WriteLine(RSA.GetText(decrypt));//выводим результат на экран
+                                            }
+                                            Console.ReadKey();*/
+
             }
             catch (Exception s)
             {
