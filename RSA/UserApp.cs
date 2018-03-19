@@ -125,7 +125,8 @@ namespace RSA
 
                 //Cоздаем класс RSA
                 RSA rsa = new RSA(p, q);
-                labelInform.Text = rsa.privateKey.ToString() + "\n";
+                labelInform.Text =  "Приватный ключ: " + rsa.privateKey.ToString() + "\n";
+                labelInform.Text = labelInform.Text + "Публичный ключ: " + rsa.publicKey.ToString() + "\n";
 
                 //Cчитываем сообщение, которое необходимо зашифровать
                 string s = textBox.Text;
@@ -142,61 +143,49 @@ namespace RSA
                 try
                 {
                     int i = 1;//с какой позиции начинается очередной блок
-                    int len = 1;//размер блока
+                    int len = 0;//размер блока
                     BigInteger crypt = new BigInteger("0");
                     List<BigInteger> cr = new List<BigInteger>();
                     string nn = num.ToString();
                     while (i < nn.Length)//пока не весь текст разбит на блоки 
                     {
-                        ++len;
+                        len += 2;
                         string temp = nn.Substring(i, len);
 
                         if (new BigInteger(temp).CompareTo(rsa.n) >= 0)
                         {
-                            temp = nn.Substring(i, len - 1);
-                            labelInform.Text = labelInform.Text + temp + " 1\n";
+                            temp = nn.Substring(i, len - 2);
                             cr.Add(new BigInteger(temp));
                             i += len;
-                            --i;
+                            i -= 2;
+                            //--i;
                             len = 0;
                         }
                         else if (i + len >= nn.Length)
                         {
                             temp = nn.Substring(i, len);
                             cr.Add(new BigInteger(temp));
-                            labelInform.Text = labelInform.Text + temp + " 2\n";
                             break;
                         }
                     }
-
-                    labelInform.Text = labelInform.Text + " Я вышел из цикла\n";
-
                     List<BigInteger> shifr = new List<BigInteger>();
                     foreach (BigInteger a in cr)
                     {
-                        BigInteger mm = rsa.Crypt(a);
-                        shifr.Add(mm);
-                        labelInform.Text = labelInform.Text + mm.ToString() + " Я зашифровал число\n";
+                        shifr.Add(rsa.Crypt(a));
                     }
-                    
-                    labelInform.Text = labelInform.Text + " Я вышел из шифровки\n";
+
                     List<BigInteger> shifr2 = new List<BigInteger>();
                     foreach (BigInteger a in shifr)
                     {
                         shifr2.Add(rsa.Decrypt(a));
                     }
-                    
-                    labelInform.Text = labelInform.Text + " Я вышел из дешифровки\n";
 
                     string tmp = "";
                     foreach (BigInteger a in shifr2)
                     {
                         string t = a.ToString();
-                        labelInform.Text = labelInform.Text + t +  " Я взял число\n";
                         tmp = tmp + RSA.GetText(a);
-                        labelInform.Text = labelInform.Text + tmp + " У меня получилось\n";
                     }
-                    labelInform.Text = labelInform.Text + " Я составил строку\n";
 
                     //Расшифрованное сообщение
                     labelInform.Text = labelInform.Text + "Зашифрованное сообщение:\n" + tmp + "\n";
